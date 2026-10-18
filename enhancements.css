@@ -1,0 +1,680 @@
+/* ============================================================
+ * MOTION v1.0.2 Enhancement Styles
+ * 四类优化：性能 / 可访问性 / 体验细节 / 稳定性
+ * 零侵入 bundle，纯 CSS 覆盖增强，可随时删除回退
+ * ============================================================ */
+
+/* ---------- 一、首屏性能 ---------- */
+
+/* 非首屏区域延迟渲染，浏览器自动跳过离屏绘制 */
+#products,
+#gallery,
+#tech,
+#wallpaper,
+#about,
+.footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 600px 1px;
+}
+
+/* Hero 壁纸延迟入场——首帧后再渐入，不阻塞首屏绘制 */
+.wallpaper-frame {
+  will-change: transform, opacity;
+}
+
+/* 字体渲染优化——使用 font-display: swap + 内联后备 */
+body, .nav, .section-title, .card-title {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis: none;
+}
+
+/* 预连接字体源（不阻塞渲染） */
+/* 通过 link preconnect 在 HTML 中完成 */
+
+/* ---------- 二、可访问性 ---------- */
+
+/* focus-visible 统一聚焦样式——键盘 Tab 时高亮描边 */
+:focus-visible {
+  outline: 2px solid var(--accent, #00e5ff);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+.filter-chip:focus-visible,
+.card-action-btn:focus-visible,
+.wallpaper-preset:focus-visible {
+  outline: 2px solid var(--accent, #00e5ff);
+  outline-offset: 2px;
+}
+
+.effect-card:focus-visible,
+.effect-card:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--accent, #00e5ff) 60%, transparent);
+  outline-offset: 2px;
+  border-color: var(--accent, #00e5ff) !important;
+}
+
+/* 卡片键盘可达：确保卡片本身可聚焦时的视觉反馈 */
+.effect-card[tabindex]:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              0 0 0 2px var(--accent, #00e5ff);
+}
+
+/* 对比度增强：正文/副标题在深色背景上确保 ≥ 4.5:1 */
+.card-desc,
+.section-subtitle,
+.footer-brand-desc,
+.tech-desc,
+.timeline-desc,
+.about-feature-text {
+  color: #a8b2d1 !important;  /* 对比度约 7.2:1 */
+}
+
+/* 标签文字对比度提升 */
+.card-tag {
+  color: color-mix(in srgb, var(--accent, #00e5ff) 90%, white) !important;
+}
+
+/* 卡片分类标签（装饰文字，保持低对比但可读） */
+.card-category {
+  color: #8892b0 !important;  /* 约 5.1:1 */
+}
+
+/* 减少动效模式——尊重 prefers-reduced-motion，开关可逆 */
+@media (prefers-reduced-motion: reduce) {
+  .effect-card:hover {
+    transform: none !important;
+  }
+  .card-title {
+    transform: none !important;
+  }
+  .detail-modal {
+    animation: none !important;
+    transform: scale(1) !important;
+    opacity: 1 !important;
+  }
+  .back-to-top {
+    transition: none !important;
+  }
+  /* 保留基本功能性反馈，只移除装饰性动画 */
+  .nav-logo-mark::before {
+    animation: none !important;
+  }
+}
+
+/* ---------- 三、体验细节 ---------- */
+
+/* 卡片悬停微交互：轻微上浮 + 描边高亮 + 标题位移，全部用 transform/opacity */
+.effect-card {
+  transition:
+    transform 0.35s cubic-bezier(.2,.8,.2,1),
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.effect-card:hover {
+  transform: translateY(-4px) scale(1.005);
+  border-color: color-mix(in srgb, var(--accent, #00e5ff) 35%, transparent) !important;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--accent, #00e5ff) 20%, transparent);
+}
+
+/* 悬停时标题轻微右移（transform 实现，GPU 友好） */
+.effect-card:hover .card-title {
+  transform: translateX(3px);
+}
+
+.card-title {
+  transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+  display: inline-block;
+}
+
+/* 卡片操作按钮更精细的 hover */
+.card-action-btn {
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.25s cubic-bezier(.2,.9,.3,1.3);
+}
+
+.card-action-btn:hover {
+  transform: scale(1.15);
+}
+
+.card-action-btn:active {
+  transform: scale(0.95);
+}
+
+/* 返回顶部按钮：平滑 + 到达顶部淡出 */
+.back-to-top {
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(.2,.8,.2,1),
+    background 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+.back-to-top:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.back-to-top:active {
+  transform: scale(0.95);
+}
+
+/* 详情弹窗：入场动画 scale + fade，纯 transform/opacity */
+.detail-modal {
+  animation: modal-in 0.35s cubic-bezier(.2,.8,.2,1);
+  will-change: transform, opacity;
+}
+
+.detail-modal.closing {
+  animation: modal-out 0.25s ease forwards;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+}
+
+/* 弹窗遮罩淡入 */
+.detail-overlay {
+  animation: overlay-in 0.25s ease;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 导航当前页态高亮 + hover 过渡 */
+.nav-link {
+  position: relative;
+  transition: color 0.25s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 0;
+  height: 2px;
+  background: var(--accent, #00e5ff);
+  border-radius: 1px;
+  transition:
+    width 0.3s cubic-bezier(.2,.8,.2,1),
+    left 0.3s cubic-bezier(.2,.8,.2,1);
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+  left: 50%;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--accent, #00e5ff);
+}
+
+/* 搜索框：匹配词高亮 */
+.search-highlight {
+  background: color-mix(in srgb, var(--accent, #00e5ff) 25%, transparent);
+  color: var(--accent, #00e5ff);
+  border-radius: 2px;
+  padding: 0 2px;
+  font-weight: 500;
+}
+
+/* 空状态按钮 hover 态 */
+.empty-btn {
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.empty-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.empty-btn.primary:hover {
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent, #00e5ff) 30%, transparent);
+}
+
+.empty-btn:active {
+  transform: translateY(0);
+}
+
+/* 筛选 chip 过渡 */
+.filter-chip {
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease;
+}
+
+.filter-chip:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent, #00e5ff) 30%, transparent);
+}
+
+.filter-chip:active {
+  transform: translateY(0);
+}
+
+/* 滚动指示器（nav dots）过渡 */
+.nav-dot {
+  transition:
+    background 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.nav-dot.active {
+  transform: scale(1.3);
+  box-shadow: 0 0 8px var(--accent, #00e5ff);
+}
+
+/* ---------- 四、稳定性相关视觉 ---------- */
+
+/* 卡片自动恢复指示器 */
+.card-recovery-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+  animation: recovery-pulse 0.8s ease-in-out;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@keyframes recovery-pulse {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* 质量降级提示条 */
+.perf-notice {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 200;
+  padding: 8px 16px;
+  background: rgba(255, 170, 0, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 170, 0, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #ffd93d;
+  opacity: 0;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(.2,.8,.2,1);
+  pointer-events: none;
+}
+
+.perf-notice.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 卡片底部描述（card-desc.js 注入，列表直接可见；未注入则不显示） */
+.effect-card .card-desc {
+  padding: 0 18px 16px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted, #7a8299);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .effect-card .card-desc { padding: 0 16px 14px; font-size: 11.5px; }
+}
+
+/* ---------- 移动端适配 ---------- */
+
+@media (max-width: 768px) {
+  /* 移动端关闭卡片悬停上浮（无 hover，节省计算） */
+  .effect-card:hover {
+    transform: none;
+  }
+  .effect-card:hover .card-title {
+    transform: none;
+  }
+  /* 移动端 content-visibility 更保守 */
+  #products, #gallery, #tech, #wallpaper, #about, .footer {
+    contain-intrinsic-size: 500px 1px;
+  }
+}
+
+/* 低性能设备降级：减少阴影和模糊 */
+@media (prefers-reduced-motion: reduce) and (prefers-contrast: more) {
+  .effect-card {
+    box-shadow: none !important;
+  }
+}
+
+/* ---------- 五、跨端健壮性增强 ---------- */
+
+/* 移动端安全区：底部固定元素避开 Home Indicator / 刘海，避免被遮挡 */
+.back-to-top {
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  right: calc(20px + env(safe-area-inset-right, 0px));
+}
+
+.nav {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.detail-modal-card,
+.detail-modal {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.gallery-search-wrap {
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+/* 触摸设备：去除点击高亮，改用 :active 反馈，避免蓝色闪块 */
+button,
+.effect-card,
+.filter-chip,
+.nav-link,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 滚动条占位稳定，避免内容在出现/消失滚动条时横向抖动 */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* 高对比度模式（Windows High Contrast / 系统“更多对比度”）：进一步提亮文字与边框 */
+@media (prefers-contrast: more) {
+  .card-desc,
+  .section-subtitle,
+  .footer-brand-desc,
+  .tech-desc,
+  .timeline-desc,
+  .about-feature-text,
+  .card-category {
+    color: #d6ddf2 !important;
+  }
+  .effect-card {
+    border-color: rgba(255, 255, 255, 0.45) !important;
+  }
+  .search-input {
+    color: #ffffff !important;
+  }
+}
+
+/* 打印样式：隐藏装饰与交互外壳，只保留可读内容 */
+@media print {
+  .bg-decor,
+  .back-to-top,
+  .nav,
+  .detail-modal,
+  .detail-overlay,
+  .perf-notice,
+  .error-stats-panel,
+  .card-recovery-indicator,
+  .gallery-search,
+  .filter-bar {
+    display: none !important;
+  }
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .effect-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+ * v1.0.15 卡片视觉重塑（覆盖 bundle 内联 <style>，用 !important 提升优先级）
+ * 现代精致深色卡片：圆角 / 玻璃描边 / 柔和阴影 / 清晰层级 / 微交互
+ * ============================================================ */
+
+.effect-card {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  background: linear-gradient(180deg, rgba(22, 26, 44, 0.92) 0%, rgba(11, 14, 26, 0.92) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 32px -14px rgba(0, 0, 0, 0.65) !important;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.3s ease,
+    box-shadow 0.4s ease !important;
+}
+
+.effect-card:hover {
+  transform: translateY(-6px) scale(1.008) !important;
+  border-color: color-mix(in srgb, var(--accent, #00e5ff) 32%, transparent) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 56px -20px rgba(0, 0, 0, 0.8),
+    0 0 0 1px color-mix(in srgb, var(--accent, #00e5ff) 16%, transparent) !important;
+}
+
+.effect-card .card-header {
+  padding: 16px 18px 12px !important;
+  gap: 12px !important;
+}
+
+.effect-card .card-index {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  padding-top: 3px !important;
+  color: color-mix(in srgb, var(--accent, #00e5ff) 50%, #8b94b8) !important;
+}
+
+.effect-card .card-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1.25 !important;
+}
+
+.effect-card .card-en {
+  font-size: 10px !important;
+  letter-spacing: 1.4px !important;
+  color: var(--text-muted, #6b7490) !important;
+}
+
+.effect-card .fav-btn {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.2s !important;
+}
+
+.effect-card .fav-btn:hover {
+  color: #ff8a8a !important;
+  background: rgba(255, 107, 107, 0.12) !important;
+  border-color: rgba(255, 107, 107, 0.32) !important;
+}
+
+.effect-card .fav-btn.active {
+  color: #ff6b6b !important;
+  border-color: rgba(255, 107, 107, 0.3) !important;
+  background: rgba(255, 107, 107, 0.1) !important;
+}
+
+.effect-card .card-demo {
+  height: 200px !important;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 120%, rgba(0, 229, 255, 0.05), transparent 60%),
+    #05070d !important;
+}
+
+.effect-card .card-footer {
+  padding: 12px 18px 16px !important;
+  gap: 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.effect-card .card-category {
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 1.2px !important;
+  padding: 4px 11px !important;
+  border-radius: 999px !important;
+  border: 1px solid color-mix(in srgb, var(--accent, #00e5ff) 24%, transparent) !important;
+  background: color-mix(in srgb, var(--accent, #00e5ff) 8%, transparent) !important;
+  color: color-mix(in srgb, var(--accent, #00e5ff) 85%, white) !important;
+}
+
+.effect-card .card-actions {
+  gap: 8px !important;
+}
+
+.effect-card .card-action-btn {
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: var(--text-secondary, #a8b2d1) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.3px !important;
+  transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s !important;
+}
+
+.effect-card .card-action-btn:hover {
+  color: #fff !important;
+  transform: translateY(-1px) !important;
+  border-color: color-mix(in srgb, var(--accent, #00e5ff) 42%, transparent) !important;
+  background: color-mix(in srgb, var(--accent, #00e5ff) 12%, transparent) !important;
+}
+
+.effect-card.favorited {
+  border-color: rgba(255, 107, 107, 0.28) !important;
+}
+
+/* 移动端：卡片更紧凑 */
+@media (max-width: 768px) {
+  .effect-card .card-demo { height: 180px !important; }
+  .effect-card .card-title { font-size: 15px !important; }
+  .effect-card .card-header { padding: 14px 16px 10px !important; }
+}
+
+/* ============================================================
+ * v1.0.16 卡片遮挡修复 + 全站字体打磨
+ * ============================================================ */
+
+/* 1) 去掉 card-header 的半透明暗渐变带——不再“压”住画布顶部（消除遮挡感） */
+.effect-card .card-header {
+  background: transparent !important;
+}
+
+/* 2) 画布内缩为独立“屏幕”：左右留白 + 圆角 + 细边 + 内阴影，与标题/底部清晰分层 */
+.effect-card .card-demo {
+  margin: 0 16px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    inset 0 10px 28px -14px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* 3) footer 与画布左右对齐 */
+.effect-card .card-footer {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+/* 移动端画布留白收窄 */
+@media (max-width: 768px) {
+  .effect-card .card-demo { margin: 0 12px !important; }
+}
+
+/* 4) 全站字体打磨：更稳的回退链 + 渲染平滑 + 连字 + 数字等宽 */
+:root {
+  --font-display: 'Space Grotesk', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-body: 'Noto Sans SC', 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  letter-spacing: 0.1px;
+}
+/* 等宽数字：序号 / 统计更整齐 */
+.card-index,
+.error-count,
+.warn-count {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* 5) 动效卡片滚动入场：与全站 reveal（in-view）协调。
+   仅对“视口外”卡片淡入，视口内直接显示；JS 未运行则不会加 will-reveal，卡片正常显示（安全降级）。 */
+.effect-card {
+  transition:
+    opacity 0.5s ease,
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.3s ease,
+    box-shadow 0.4s ease !important;
+}
+.effect-card.will-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.effect-card.will-reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .effect-card.will-reveal { opacity: 1 !important; transform: none !important; }
+}

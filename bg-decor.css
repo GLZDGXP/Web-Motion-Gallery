@@ -1,0 +1,291 @@
+/* ============================================================
+ * MOTION v1.0.3 · Background Decorations
+ * 全站背景装饰层：星点 + 微光网格 + 渐变光晕 + 悬浮尘埃
+ * 纯 CSS + 极轻量 Canvas，GPU 合成优先，不抢动效主体
+ * ============================================================ */
+
+/* 装饰层容器——fixed 全视口，z-index 最低，pointer-events: none */
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ---------- 1. 星点背景（纯 CSS radial-gradient 点阵 + 微闪） ---------- */
+
+.bg-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, rgba(200, 210, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 80px 120px, rgba(180, 190, 240, 0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 150px 60px, rgba(220, 220, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 220px 180px, rgba(170, 180, 230, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 300px 90px, rgba(210, 215, 255, 0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 380px 250px, rgba(230, 230, 255, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 450px 150px, rgba(190, 200, 245, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 520px 40px, rgba(180, 190, 240, 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 600px 200px, rgba(220, 225, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 680px 100px, rgba(200, 210, 250, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 750px 280px, rgba(170, 180, 235, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 820px 50px, rgba(210, 215, 255, 0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 900px 180px, rgba(225, 225, 255, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 980px 220px, rgba(185, 195, 240, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 1060px 80px, rgba(195, 205, 250, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 1140px 260px, rgba(205, 210, 255, 0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 1220px 130px, rgba(220, 220, 255, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 1300px 30px, rgba(180, 190, 240, 0.4), transparent 60%),
+    radial-gradient(1px 1px at 1380px 210px, rgba(215, 220, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 1460px 160px, rgba(190, 200, 245, 0.5), transparent 60%);
+  background-size: 1500px 320px;
+  background-repeat: repeat;
+  animation: stars-drift 120s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes stars-drift {
+  from { background-position: 0 0; }
+  to { background-position: 1500px 320px; }
+}
+
+/* 星点微闪——用伪元素叠加另一层错开的点阵做呼吸 */
+.bg-stars::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 50px 180px, rgba(230, 230, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 130px 70px, rgba(200, 210, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 260px 240px, rgba(220, 225, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 350px 20px, rgba(190, 200, 245, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 430px 130px, rgba(210, 215, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 550px 200px, rgba(225, 225, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 650px 50px, rgba(200, 210, 250, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 730px 270px, rgba(215, 220, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 850px 150px, rgba(230, 230, 255, 0.8), transparent 60%),
+    radial-gradient(1px 1px at 950px 240px, rgba(195, 205, 250, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 1040px 30px, rgba(220, 225, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 1120px 180px, rgba(185, 195, 240, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 1200px 90px, rgba(210, 215, 255, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 1280px 260px, rgba(225, 225, 255, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 1360px 140px, rgba(200, 210, 250, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 1440px 220px, rgba(215, 220, 255, 0.6), transparent 60%);
+  background-size: 1500px 300px;
+  background-repeat: repeat;
+  animation: stars-breathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes stars-breathe {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+
+/* ---------- 2. 微光网格（CSS linear-gradient 1px 低对比线） ---------- */
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(100, 120, 200, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 120, 200, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  opacity: 0.4;
+}
+
+/* ---------- 3. 渐变光晕（2-3 个径向光斑，极淡极柔） ---------- */
+
+.bg-glows {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.16;
+}
+
+.bg-glow-1 {
+  /* Hero 上方：青色光斑 */
+  width: 500px;
+  height: 500px;
+  top: -150px;
+  left: 20%;
+  background: radial-gradient(circle, #00e5ff, transparent 70%);
+  animation: glow-float-1 25s ease-in-out infinite alternate;
+}
+
+.bg-glow-2 {
+  /* 右侧中部：紫色光斑 */
+  width: 450px;
+  height: 450px;
+  top: 40%;
+  right: -100px;
+  background: radial-gradient(circle, #b14dff, transparent 70%);
+  animation: glow-float-2 30s ease-in-out infinite alternate;
+}
+
+.bg-glow-3 {
+  /* 左下角：粉色光斑 */
+  width: 400px;
+  height: 400px;
+  bottom: -100px;
+  left: -80px;
+  background: radial-gradient(circle, #ff4d9d, transparent 70%);
+  animation: glow-float-3 28s ease-in-out infinite alternate;
+}
+
+@keyframes glow-float-1 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(30px, 20px) scale(1.08); }
+}
+
+@keyframes glow-float-2 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-20px, -30px) scale(1.1); }
+}
+
+@keyframes glow-float-3 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(25px, -15px) scale(1.05); }
+}
+
+/* ---------- 4. 悬浮尘埃（20 个极淡颗粒缓慢上浮，CSS transform） ---------- */
+
+.bg-dust {
+  position: absolute;
+  inset: 0;
+}
+
+.dust-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(200, 210, 255, 0.3);
+  animation: dust-rise linear infinite;
+  opacity: 0;
+}
+
+@keyframes dust-rise {
+  0% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(30px);
+    opacity: 0;
+  }
+}
+
+/* 20 个尘埃粒子的错落位置与动画时长 */
+.dust-particle:nth-child(1)  { left: 5%;  animation-duration: 22s; animation-delay: 0s;   width: 2px; height: 2px; }
+.dust-particle:nth-child(2)  { left: 12%; animation-duration: 28s; animation-delay: -5s;  width: 1.5px; height: 1.5px; }
+.dust-particle:nth-child(3)  { left: 20%; animation-duration: 25s; animation-delay: -10s; width: 2px; height: 2px; }
+.dust-particle:nth-child(4)  { left: 28%; animation-duration: 32s; animation-delay: -3s;  width: 1px; height: 1px; }
+.dust-particle:nth-child(5)  { left: 35%; animation-duration: 20s; animation-delay: -15s; width: 2.5px; height: 2.5px; }
+.dust-particle:nth-child(6)  { left: 42%; animation-duration: 30s; animation-delay: -8s;  width: 1.5px; height: 1.5px; }
+.dust-particle:nth-child(7)  { left: 48%; animation-duration: 26s; animation-delay: -12s; width: 2px; height: 2px; }
+.dust-particle:nth-child(8)  { left: 55%; animation-duration: 24s; animation-delay: -2s;  width: 1.5px; height: 1.5px; }
+.dust-particle:nth-child(9)  { left: 62%; animation-duration: 29s; animation-delay: -18s; width: 1px; height: 1px; }
+.dust-particle:nth-child(10) { left: 68%; animation-duration: 23s; animation-delay: -6s;  width: 2px; height: 2px; }
+.dust-particle:nth-child(11) { left: 75%; animation-duration: 27s; animation-delay: -14s; width: 1.5px; height: 1.5px; }
+.dust-particle:nth-child(12) { left: 82%; animation-duration: 31s; animation-delay: -9s;  width: 2px; height: 2px; }
+.dust-particle:nth-child(13) { left: 90%; animation-duration: 21s; animation-delay: -4s;  width: 1px; height: 1px; }
+.dust-particle:nth-child(14) { left: 96%; animation-duration: 26s; animation-delay: -16s; width: 2px; height: 2px; }
+.dust-particle:nth-child(15) { left: 8%;  animation-duration: 33s; animation-delay: -20s; width: 1.5px; height: 1.5px; }
+.dust-particle:nth-child(16) { left: 18%; animation-duration: 22s; animation-delay: -1s;  width: 2.5px; height: 2.5px; }
+.dust-particle:nth-child(17) { left: 32%; animation-duration: 28s; animation-delay: -11s; width: 1px; height: 1px; }
+.dust-particle:nth-child(18) { left: 58%; animation-duration: 24s; animation-delay: -7s;  width: 2px; height: 2px; }
+.dust-particle:nth-child(19) { left: 78%; animation-duration: 30s; animation-delay: -19s; width: 1.5px; height: 1.5px; }
+.dust-particle:nth-child(20) { left: 88%; animation-duration: 25s; animation-delay: -13s; width: 2px; height: 2px; }
+
+/* 全局只保留前 10 颗尘埃：减少常驻合成层（降 GPU），视觉几乎无差 */
+.dust-particle:nth-child(n+11) { display: none; }
+
+/* ---------- 响应式：移动端减少装饰 ---------- */
+
+@media (max-width: 768px) {
+  .bg-stars {
+    opacity: 0.35;
+    animation-duration: 200s; /* 更慢 */
+  }
+  .bg-grid {
+    opacity: 0.2;
+    background-size: 80px 80px;
+  }
+  .bg-glow {
+    opacity: 0.12;
+  }
+  .bg-glow-1 { width: 300px; height: 300px; top: -80px; left: -50px; }
+  .bg-glow-2 { width: 280px; height: 280px; top: 30%; right: -80px; }
+  .bg-glow-3 { width: 250px; height: 250px; bottom: -60px; left: -50px; }
+  /* 移动端只保留 10 颗尘埃 */
+  .dust-particle:nth-child(n+11) {
+    display: none;
+  }
+}
+
+/* ---------- reduced-motion：全部静止 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-stars,
+  .bg-stars::after,
+  .bg-glow-1,
+  .bg-glow-2,
+  .bg-glow-3,
+  .dust-particle {
+    animation: none !important;
+  }
+  .bg-stars::after {
+    opacity: 0.7 !important;
+  }
+  .dust-particle {
+    opacity: 0 !important; /* 静止时尘埃不显示（无动画则一直停在底部） */
+  }
+  /* 省电：reduced-motion 下连模糊光晕也关闭，仅保留静态渐变 */
+  .bg-glow {
+    filter: none !important;
+    opacity: 0.06 !important;
+  }
+}
+
+/* ---------- GPU 合成提示：提示合成层，减少重排（移除冗余 translateZ / backface，避免覆盖动画 transform） ---------- */
+
+.bg-glow,
+.dust-particle {
+  will-change: transform, opacity;
+}
+.bg-stars::after {
+  will-change: opacity;
+}
+
+/* 低端设备（内存受限 / 弱网）进一步收敛装饰，保障主体动效帧率 */
+@media (prefers-reduced-data: reduce) {
+  .bg-dust { display: none; }
+  .bg-glow { opacity: 0.05 !important; }
+}
+
+/* ---------- 与壁纸层共存：装饰层在壁纸下层 ---------- */
+
+.wallpaper-frame {
+  position: relative;
+  z-index: 1; /* 壁纸在装饰层之上 */
+}
+
+/* Hero 区域的装饰层增强 */
+#hero {
+  position: relative;
+  z-index: 1;
+}

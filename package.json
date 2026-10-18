@@ -1,0 +1,10 @@
+{
+  "name": "motion-gallery",
+  "version": "1.0.0",
+  "description": "A handcrafted web motion gallery — 120 interactive animations, zero-dependency, GPU-friendly, with viewport-aware performance scheduling.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node serve/server.js"
+  }
+}
