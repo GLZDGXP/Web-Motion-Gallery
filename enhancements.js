@@ -227,9 +227,6 @@
 
     // 3.2 返回顶部平滑滚动增强
     setupBackToTop();
-
-    // 3.3 空状态按钮 hover 态（CSS 已实现，此处加动画反馈）
-    // 3.4 导航当前页态高亮（CSS 已实现）
   }
 
   // 3.1 搜索防抖（零侵入：仅节流高频输入，不破坏 React 受控输入）
@@ -327,30 +324,29 @@
   }
 
   function setupMemoryMonitor() {
-    const perf = performance;
-    if (!perf || !perf.memory) return; // 仅 Chrome 支持
-
-    // 每 30 秒采样一次堆内存
-    memoryMonitorTimer = setInterval(() => {
-      const mem = perf.memory;
-      const usedMB = (mem.usedJSHeapSize / 1048576).toFixed(1);
-      memoryHistory.push(Number(usedMB));
-      if (memoryHistory.length > 20) memoryHistory.shift();
-
-      // 检测持续增长：最近 10 次样本单调增长 > 30%
-      if (memoryHistory.length >= 10 && !downgradeTriggered) {
-        const recent = memoryHistory.slice(-10);
-        let increasing = 0;
-        for (let i = 1; i < recent.length; i++) {
-          if (recent[i] > recent[i - 1] * 1.02) increasing++;
+    if (!performance.memory) return; // 仅 Chrome 支持
+    // 单一监控：采样 + 增长分析 + 降级。visibility 恢复时 restart 同一个，避免重复 interval。
+    const start = () => {
+      if (memoryMonitorTimer) return;
+      memoryMonitorTimer = setInterval(() => {
+        const mem = performance.memory;
+        const usedMB = Number((mem.usedJSHeapSize / 1048576).toFixed(1));
+        memoryHistory.push(usedMB);
+        if (memoryHistory.length > 20) memoryHistory.shift();
+        // 持续增长检测：最近 10 次样本单调增长 > 30% 且总增长 > 40% → 触发降级
+        if (memoryHistory.length >= 10 && !downgradeTriggered) {
+          const recent = memoryHistory.slice(-10);
+          let increasing = 0;
+          for (let i = 1; i < recent.length; i++) if (recent[i] > recent[i - 1] * 1.02) increasing++;
+          const totalGrowth = (recent[recent.length - 1] - recent[0]) / recent[0];
+          if (increasing >= 8 && totalGrowth > 0.4) triggerDowngrade('memory_growth', usedMB);
         }
-        // 80% 以上样本增长 + 总增长 > 40% → 触发降级
-        const totalGrowth = (recent[recent.length - 1] - recent[0]) / recent[0];
-        if (increasing >= 8 && totalGrowth > 0.4) {
-          triggerDowngrade('memory_growth', usedMB);
-        }
-      }
-    }, 30000);
+      }, 30000);
+    };
+    const stop = () => { if (memoryMonitorTimer) { clearInterval(memoryMonitorTimer); memoryMonitorTimer = null; } };
+    start();
+    // 供 visibility 恢复时复用
+    window.__memoryMonitor = { start: start, stop: stop };
   }
 
   function triggerDowngrade(reason, value) {
@@ -416,21 +412,11 @@
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        // 页面隐藏时：暂停内存监控轮询（全局 rAF 由引擎自身在 visibilitychange 时自动停止，无需此处干预）
-        if (memoryMonitorTimer) {
-          clearInterval(memoryMonitorTimer);
-          memoryMonitorTimer = null;
-        }
+        // 页面隐藏：暂停内存监控轮询（全局 rAF 由引擎自身在 visibilitychange 时自动停止，无需此处干预）
+        if (window.__memoryMonitor) window.__memoryMonitor.stop();
       } else {
-        // 页面恢复：重启内存监控
-        if (!memoryMonitorTimer && performance.memory) {
-          memoryMonitorTimer = setInterval(() => {
-            const mem = performance.memory;
-            const usedMB = (mem.usedJSHeapSize / 1048576).toFixed(1);
-            memoryHistory.push(Number(usedMB));
-            if (memoryHistory.length > 20) memoryHistory.shift();
-          }, 30000);
-        }
+        // 页面恢复：重启同一个内存监控（保持增长分析能力）
+        if (window.__memoryMonitor) window.__memoryMonitor.start();
         // 多次延迟恢复：覆盖 rAF 恢复、布局稳定、激活调度器节流标志重置等时序
         [0, 120, 350, 800, 1500, 3000].forEach((delay) => setTimeout(forceRecover, delay));
       }
@@ -573,7 +559,6 @@
         enhanceExperience();
         deferHeavyComponents();
         setupCardReveal();
-        setupHeroAurora();
       });
     });
   }
@@ -615,94 +600,13 @@
     });
   }
 
-  // 首屏氛围：往 .hero-visual-bg 注入一层“极光缎带”（融入站点自身动效）。
-  // 低透明度 + screen 混合，叠加在 ParticleNetwork 之上不抢内容；
-  // 视口外/后台自动暂停，reduced-motion 直接跳过，bundle 异步渲染则轮询等待。
-  function setupHeroAurora() {
-    try {
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      var host = document.querySelector('.hero-visual-bg');
-      if (!host) {
-        // bundle 可能尚未渲染 hero，稍后重试几次
-        var tries = 0;
-        var timer = setInterval(function () {
-          host = document.querySelector('.hero-visual-bg');
-          if (host || ++tries > 20) { clearInterval(timer); if (host) inject(); }
-        }, 250);
-        return;
-      }
-      inject();
-      function inject() {
-        if (host.querySelector('.hero-aurora')) return;
-        var cv = document.createElement('canvas');
-        cv.className = 'hero-aurora';
-        host.appendChild(cv);
-        var ctx = cv.getContext('2d');
-        var W = 0, H = 0, DPR = 1, raf = 0, visible = true, start = performance.now();
-        var ribbons = [];
-        for (var i = 0; i < 5; i++) ribbons.push({ hue: 140 + i * 26, ph: i * 1.7, amp: 0.12 + i * 0.025, sp: 0.5 + i * 0.16, yo: (i / 4 - 0.5) * 0.5 });
-        function resize() {
-          DPR = Math.min(window.devicePixelRatio || 1, 2);
-          var r = host.getBoundingClientRect();
-          W = Math.max(1, r.width); H = Math.max(1, r.height);
-          cv.width = W * DPR; cv.height = H * DPR;
-          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        }
-        function onVis() { visible = !document.hidden; }
-        document.addEventListener('visibilitychange', onVis);
-        window.addEventListener('resize', resize);
-        resize();
-        var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00e5ff';
-        function frame(now) {
-          raf = requestAnimationFrame(frame);
-          if (!visible) { start = now - (frame._last || 0); return; }
-          frame._last = now - start;
-          var tt = (now - start) * 0.0004;
-          ctx.clearRect(0, 0, W, H);
-          ctx.globalCompositeOperation = 'lighter';
-          for (var r = 0; r < ribbons.length; r++) {
-            var rb = ribbons[r], thick = 9 + r * 5, steps = 32;
-            var grad = ctx.createLinearGradient(0, 0, W, 0);
-            grad.addColorStop(0, 'hsla(' + ((rb.hue) % 360) + ',90%,55%,0)');
-            grad.addColorStop(0.5, 'hsla(' + ((rb.hue) % 360) + ',95%,60%,0.4)');
-            grad.addColorStop(1, 'hsla(' + ((rb.hue + 20) % 360) + ',90%,55%,0)');
-            ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.moveTo(0, H);
-            for (var i2 = 0; i2 <= steps; i2++) {
-              var x = (i2 / steps) * W;
-              var y = H / 2 + rb.yo * H + Math.sin(x * 0.012 + tt * rb.sp + rb.ph) * H * rb.amp + Math.sin(x * 0.005 - tt * rb.sp * 0.7) * H * rb.amp * 0.6;
-              ctx.lineTo(x, y - thick / 2);
-            }
-            for (var i3 = steps; i3 >= 0; i3--) {
-              var x2 = (i3 / steps) * W;
-              var y2 = H / 2 + rb.yo * H + Math.sin(x2 * 0.012 + tt * rb.sp + rb.ph) * H * rb.amp + Math.sin(x2 * 0.005 - tt * rb.sp * 0.7) * H * rb.amp * 0.6;
-              ctx.lineTo(x2, y2 + thick / 2);
-            }
-            ctx.closePath(); ctx.fill();
-          }
-          ctx.globalCompositeOperation = 'source-over';
-        }
-        raf = requestAnimationFrame(frame);
-        // 滚出视口暂停（省电）
-        if ('IntersectionObserver' in window) {
-          new IntersectionObserver(function (es) {
-            es.forEach(function (e) { visible = e.isIntersecting && !document.hidden; });
-          }, { threshold: 0 }).observe(host);
-        }
-        // 保存清理引用
-        host._auroraCleanup = function () {
-          cancelAnimationFrame(raf);
-          document.removeEventListener('visibilitychange', onVis);
-          window.removeEventListener('resize', resize);
-          if (cv.parentNode) cv.parentNode.removeChild(cv);
-        };
-      }
-    } catch (e) { /* 氛围层失败不影响主流程 */ }
-  }
+
+  // 暴露共享 DOM 变更订阅（供 card-desc.js 等复用同一个 body MutationObserver，避免重复监听）
+  window.__motionOnDomChange = onDomChange;
 
   // 暴露到 window 供调试
   window.__motionEnhancements = {
-    version: '1.0.2',
+    version: '2.0',
     getStats: () => ({
       errors: errorStats.errors,
       warnings: errorStats.warnings,
