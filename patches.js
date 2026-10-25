@@ -233,13 +233,35 @@
       var orig = proto[fn];
       if (typeof orig !== 'function') return;
       proto[fn] = function () {
-        var g = orig.apply(this, arguments);
+        // 非有限参数（NaN/Infinity，多见于动效 st 未就绪或除零算出的半径/坐标）→ 返回安全渐变，避免抛错拖垮渲染
+        var args = arguments, bad = false, ai;
+        for (ai = 0; ai < args.length; ai++) {
+          if (typeof args[ai] !== 'number' || !isFinite(args[ai])) { bad = true; break; }
+        }
+        var g;
+        if (bad) {
+          try { g = proto.createLinearGradient.call(this, 0, 0, 0, 0); } catch (e) { g = null; }
+        } else {
+          try { g = orig.apply(this, args); } catch (e) { try { g = proto.createLinearGradient.call(this, 0, 0, 0, 0); } catch (e2) { g = null; } }
+        }
+        // 治本定位：拦截到非有限参数时记录 bundle 内出错行号（限 3 次，不刷屏），供定位根因动效
+        if ((bad || !g) && (window.__ggWarn || 0) < 3) {
+          window.__ggWarn = (window.__ggWarn || 0) + 1;
+          try {
+            var stk = new Error().stack || '';
+            var lm = stk.match(/bundle\.min\.js[^\s:]*:(\d+)/);
+            var ln = lm ? lm[1] : '?';
+            var vals = [];
+            for (var zi = 0; zi < args.length; zi++) vals.push(typeof args[zi] === 'number' ? (isFinite(args[zi]) ? args[zi] : 'NaN/Inf') : typeof args[zi]);
+            console.error('[grad-guard] line=' + ln + ' args=' + JSON.stringify(vals));
+          } catch (e2) {}
+        }
         if (g && typeof g.addColorStop === 'function' && !g.__guard) {
           g.__oa = g.addColorStop.bind(g);
           g.__guard = true;
           g.addColorStop = guarded;
         }
-        return g;
+        return g || { addColorStop: function () {} };
       };
     });
   })();
@@ -262,11 +284,11 @@
     }
   })();
 
-  /* ===== 限制 canvas DPR：高分屏(DPR>1.5)像素翻倍是 GPU 光栅化大头，cap 到 1.5 兼顾清晰与性能 ===== */
+  /* ===== 限制 canvas DPR：高分屏像素翻倍是 GPU 光栅化大头，激进 cap 到 1.0（配合激活预算下调，飞跃性能）===== */
   (function () {
     var real = window.devicePixelRatio || 1;
-    if (real > 1.5) {
-      try { Object.defineProperty(window, 'devicePixelRatio', { get: function () { return 1.5; }, configurable: true }); } catch (e) {}
+    if (real > 1.0) {
+      try { Object.defineProperty(window, 'devicePixelRatio', { get: function () { return 1.0; }, configurable: true }); } catch (e) {}
     }
   })();
 })();

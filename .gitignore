@@ -28,3 +28,8 @@ serve/
 
 # 构建产物（如需保留 bundle.min.js 作为发布产物，可移除下一行）
 # dist/
+
+components/
+tool/
+DEPLOY.md
+package-lock.json"components/" 
