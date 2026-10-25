@@ -215,25 +215,62 @@ button:focus-visible,
   transition: color 0.25s ease;
 }
 
-.nav-link::after {
+/* 下划线指示器：.nav-links 提升特异性 + !important 覆盖 bundle 内联样式；
+   用 left/right 满宽居中（不用 translateX(-50%)，避免与 bundle 的 scaleX 打架偏移），
+   scaleX 从中心平滑展开 */
+.nav-links .nav-link::after {
   content: '';
   position: absolute;
-  left: 50%;
+  left: 0 !important;
+  right: 0 !important;
+  width: auto !important;
   bottom: -6px;
-  width: 0;
   height: 2px;
   background: var(--accent, #00e5ff);
   border-radius: 1px;
-  transition:
-    width 0.3s cubic-bezier(.2,.8,.2,1),
-    left 0.3s cubic-bezier(.2,.8,.2,1);
-  transform: translateX(-50%);
+  transform: scaleX(0) !important;
+  transform-origin: center !important;
+  transition: transform 0.3s cubic-bezier(.2,.8,.2,1) !important;
 }
 
-.nav-link:hover::after,
-.nav-link.active::after {
+.nav-links .nav-link:hover::after,
+.nav-links .nav-link.active::after {
+  transform: scaleX(1) !important;
+}
+
+/* ============ 网站自身动效增强 v1.1.0（自然、不刻意、GPU 友好）============ */
+/* Hero 渐变标题：背景缓慢流动（像呼吸） */
+.hero-title .gradient-text {
+  background-size: 220% 100% !important;
+  animation: hero-gradient-flow 9s ease-in-out infinite;
+}
+@keyframes hero-gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+/* Hero 标签呼吸点 */
+.hero-label-dot {
+  animation: hero-dot-pulse 2.6s ease-in-out infinite;
+}
+@keyframes hero-dot-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--accent, #00e5ff); }
+  50% { opacity: 0.65; box-shadow: 0 0 0 7px transparent; }
+}
+/* 极光氛围层（enhancements.js 注入到 .hero-visual-bg，铺满、低透明、不拦截指针） */
+.hero-aurora {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  left: 50%;
+  height: 100%;
+  opacity: 0.5;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+/* 尊重系统减少动效 */
+@media (prefers-reduced-motion: reduce) {
+  .hero-title .gradient-text,
+  .hero-label-dot { animation: none !important; }
+  .hero-aurora { display: none !important; }
 }
 
 .nav-link:hover,

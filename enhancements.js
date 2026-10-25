@@ -573,6 +573,7 @@
         enhanceExperience();
         deferHeavyComponents();
         setupCardReveal();
+        setupHeroAurora();
       });
     });
   }
@@ -612,6 +613,91 @@
         });
       });
     });
+  }
+
+  // 首屏氛围：往 .hero-visual-bg 注入一层“极光缎带”（融入站点自身动效）。
+  // 低透明度 + screen 混合，叠加在 ParticleNetwork 之上不抢内容；
+  // 视口外/后台自动暂停，reduced-motion 直接跳过，bundle 异步渲染则轮询等待。
+  function setupHeroAurora() {
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var host = document.querySelector('.hero-visual-bg');
+      if (!host) {
+        // bundle 可能尚未渲染 hero，稍后重试几次
+        var tries = 0;
+        var timer = setInterval(function () {
+          host = document.querySelector('.hero-visual-bg');
+          if (host || ++tries > 20) { clearInterval(timer); if (host) inject(); }
+        }, 250);
+        return;
+      }
+      inject();
+      function inject() {
+        if (host.querySelector('.hero-aurora')) return;
+        var cv = document.createElement('canvas');
+        cv.className = 'hero-aurora';
+        host.appendChild(cv);
+        var ctx = cv.getContext('2d');
+        var W = 0, H = 0, DPR = 1, raf = 0, visible = true, start = performance.now();
+        var ribbons = [];
+        for (var i = 0; i < 5; i++) ribbons.push({ hue: 140 + i * 26, ph: i * 1.7, amp: 0.12 + i * 0.025, sp: 0.5 + i * 0.16, yo: (i / 4 - 0.5) * 0.5 });
+        function resize() {
+          DPR = Math.min(window.devicePixelRatio || 1, 2);
+          var r = host.getBoundingClientRect();
+          W = Math.max(1, r.width); H = Math.max(1, r.height);
+          cv.width = W * DPR; cv.height = H * DPR;
+          ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        }
+        function onVis() { visible = !document.hidden; }
+        document.addEventListener('visibilitychange', onVis);
+        window.addEventListener('resize', resize);
+        resize();
+        var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00e5ff';
+        function frame(now) {
+          raf = requestAnimationFrame(frame);
+          if (!visible) { start = now - (frame._last || 0); return; }
+          frame._last = now - start;
+          var tt = (now - start) * 0.0004;
+          ctx.clearRect(0, 0, W, H);
+          ctx.globalCompositeOperation = 'lighter';
+          for (var r = 0; r < ribbons.length; r++) {
+            var rb = ribbons[r], thick = 9 + r * 5, steps = 32;
+            var grad = ctx.createLinearGradient(0, 0, W, 0);
+            grad.addColorStop(0, 'hsla(' + ((rb.hue) % 360) + ',90%,55%,0)');
+            grad.addColorStop(0.5, 'hsla(' + ((rb.hue) % 360) + ',95%,60%,0.4)');
+            grad.addColorStop(1, 'hsla(' + ((rb.hue + 20) % 360) + ',90%,55%,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.moveTo(0, H);
+            for (var i2 = 0; i2 <= steps; i2++) {
+              var x = (i2 / steps) * W;
+              var y = H / 2 + rb.yo * H + Math.sin(x * 0.012 + tt * rb.sp + rb.ph) * H * rb.amp + Math.sin(x * 0.005 - tt * rb.sp * 0.7) * H * rb.amp * 0.6;
+              ctx.lineTo(x, y - thick / 2);
+            }
+            for (var i3 = steps; i3 >= 0; i3--) {
+              var x2 = (i3 / steps) * W;
+              var y2 = H / 2 + rb.yo * H + Math.sin(x2 * 0.012 + tt * rb.sp + rb.ph) * H * rb.amp + Math.sin(x2 * 0.005 - tt * rb.sp * 0.7) * H * rb.amp * 0.6;
+              ctx.lineTo(x2, y2 + thick / 2);
+            }
+            ctx.closePath(); ctx.fill();
+          }
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        raf = requestAnimationFrame(frame);
+        // 滚出视口暂停（省电）
+        if ('IntersectionObserver' in window) {
+          new IntersectionObserver(function (es) {
+            es.forEach(function (e) { visible = e.isIntersecting && !document.hidden; });
+          }, { threshold: 0 }).observe(host);
+        }
+        // 保存清理引用
+        host._auroraCleanup = function () {
+          cancelAnimationFrame(raf);
+          document.removeEventListener('visibilitychange', onVis);
+          window.removeEventListener('resize', resize);
+          if (cv.parentNode) cv.parentNode.removeChild(cv);
+        };
+      }
+    } catch (e) { /* 氛围层失败不影响主流程 */ }
   }
 
   // 暴露到 window 供调试

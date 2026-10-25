@@ -24,7 +24,7 @@
   <meta name="twitter:title" content="MOTION · Web 动效博物馆" />
   <meta name="twitter:description" content="120 种手造 Web 动效，可交互、可复制、可商用。" />
   <meta name="twitter:image" content="thumbnail.png" />
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="manifest.json?v=1.1.0" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%23b14dff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Cpath d='M16 44 L26 22 L32 38 L38 18 L48 44' stroke='white' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/%3E%3C/svg%3E" />
   <title>MOTION · Web 动效博物馆</title>
   <script type="application/ld+json">
@@ -148,16 +148,16 @@
     .error-stats-panel { display: none; }
     .card-recovery-indicator { display: none; }
   </style>
-  <link rel="stylesheet" href="enhancements.css?v=1.0.19" />
+  <link rel="stylesheet" href="enhancements.css?v=1.1.1" />
   <link rel="stylesheet" href="bg-decor.css?v=1.0.2" />
   <!-- 提前与 HTML 解析并行下载主脚本，缩短首屏可执行时间 -->
-  <link rel="preload" as="script" href="bundle.min.js?v=1.0.13" />
+  <link rel="preload" as="script" href="bundle.min.js?v=1.0.17" />
 </head>
 <body>
   <div id="loading" class="loading-screen">
     <div class="loading-logo">M</div>
     <div class="loading-text">LOADING MOTION GALLERY</div>
-    <div class="loading-version" style="font-family:var(--font-mono);font-size:11px;color:#00e5ff;opacity:.6;letter-spacing:1px;">v1.0.3 · 120 EFFECTS</div>
+    <div class="loading-version" style="font-family:var(--font-mono);font-size:11px;color:#00e5ff;opacity:.6;letter-spacing:1px;">v1.1.0 · 130 EFFECTS</div>
     <div class="loading-bar"><div class="loading-bar-fill"></div></div>
   </div>
 
@@ -187,15 +187,16 @@
   </div>
 
   <!-- 注入的 10 个全新创意动效：独立于 bundle，挂到 window 供 EFFECTS.component 引用 -->
-  <script src="new-effects.js?v=1.0.16" defer></script>
   <!-- 单文件打包：120 个动效 + 基建 + app 全量编译合并 -->
-  <script src="bundle.min.js?v=1.0.13" defer></script>
+  <script src="bundle.min.js?v=1.0.17" defer></script>
+  <!-- 全新动效 + 重写 HarmonyNotification：必须在 bundle 之后加载，才能覆盖 bundle 原生组件 -->
+  <script src="new-effects.js?v=1.0.19" defer></script>
   <!-- 覆盖 bundle 内两个问题组件：Diamond3D(性能+质量) / ProgressCounter(加载异常)。在 bundle 后、React 渲染前生效 -->
   <script src="patches.js?v=1.0.5" defer></script>
   <!-- v1.0.2 增强脚本：性能/可访问性/体验/稳定性，零侵入 bundle -->
-  <script src="enhancements.js?v=1.0.15" defer></script>
+  <script src="enhancements.js?v=1.1.1" defer></script>
   <!-- 中英语言自动切换 + 英文文案（零侵入 bundle，挂在 bundle 之后） -->
   <script src="i18n.js?v=1.0.3" defer></script>
-  <script src="card-desc.js?v=1.0.2" defer></script>
+  <script src="card-desc.js?v=1.0.4" defer></script>
 </body>
 </html>

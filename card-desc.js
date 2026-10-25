@@ -62,10 +62,8 @@
     "silk-flow": { "zh": "多条丝绸般的流线粒子拖尾缓缓流动，鼠标划过带动丝带波动与涟漪。", "en": "Silky streamline particle trails flowing slowly; the mouse drags ripples and waves through the ribbons." },
     "ink-spread": { "zh": "水墨墨滴入水般缓缓扩散，分形纹理沿边缘蔓延，点击可滴落新墨。", "en": "An ink drop diffuses in water, fractal textures creeping along the edges; click to drop new ink." },
     "pixel-morph": { "zh": "像素块矩阵在多种几何图案间变形过渡，鼠标扫过像素点亮并产生排斥。", "en": "A pixel-block matrix morphs between geometric patterns; the mouse lights up and repels pixels as it sweeps." },
-    "matrix-rain": { "zh": "经典数字雨字符坠落，绿色辉光 + 拖尾渐隐，鼠标靠近加速流动并点亮。", "en": "The classic digital-rain characters falling, green glow with fading trails; the mouse accelerates and lights up nearby." },
     "paper-fold": { "zh": "3D 纸片多段翻折展开，鼠标拖拽可自由旋转视角，阴影与纸张纹理细腻。", "en": "3D paper multi-segment folding unfolds; drag to rotate freely, with fine shadow and paper texture." },
     "depth-parallax": { "zh": "多层景观元素随鼠标 3D 视差位移，远近景层次分明，带景深模糊与暗角。", "en": "Multi-layer landscape elements shift in 3D parallax with the mouse; distinct near/far layers with depth blur and vignette." },
-    "aurora-curtain-particles": { "zh": "粒子帷幕从天空垂落，色彩渐变流动如极光翻涌，鼠标划动掀起光幕波动。", "en": "A particle curtain falls from the sky, colors gradients flowing like surging aurora; the mouse stirs waves in the light veil." },
     "cube-field-3d": { "zh": "数百小立方体构成 3D 方阵旋转漂移，鼠标拖拽旋转视角，碰撞弹跳。", "en": "Hundreds of small cubes form a rotating 3D array; drag to rotate, bouncing on collision." },
     "candle-flame": { "zh": "蜡烛烛火摇曳，火焰三层色阶 + 光晕 + 蜡泪，鼠标靠近火苗摆动。", "en": "A candle flame sways — three-tier flame color + glow + wax tears; the flame leans as the mouse nears." },
     "sand-fall": { "zh": "沙粒从顶部倾泻成瀑布，堆积成沙丘，鼠标可挖沙/扰动沙流。", "en": "Sand pours from the top into a waterfall, piling into dunes; the mouse can dig and disturb the flow." },
@@ -87,7 +85,6 @@
     "waterfall-3d": { "zh": "3D 瀑布水流粒子倾泻，水花飞溅，雾化效果与水潭波纹。", "en": "3D waterfall particles pouring down, splashing, with mist and pool ripples." },
     "hologram-earth": { "zh": "旋转全息地球——经纬线网格、大气层辉光、城市灯光点，拖拽旋转视角，WebGL 加速。", "en": "A rotating holographic Earth — lat/long grid, atmospheric glow, city lights; drag to rotate, WebGL accelerated." },
     "tunnel-3d": { "zh": "第一人称穿越无限光隧道，环状光带不断向前流动，鼠标控制速度与视角偏移。", "en": "First-person flight through an infinite light tunnel; ring light-bands flow forward, mouse controls speed and view offset." },
-    "spiral-galaxy": { "zh": "旋臂星系粒子旋转，中心核球明亮，旋臂缠绕演化，点击扰动旋臂形态。", "en": "A spiral-arm galaxy rotating, bright central bulge, arms winding and evolving; click to disturb the arms." },
     "sakura-petals": { "zh": "樱花花瓣随风飘落旋转，风场扰动轻盈摇曳，点击扬起漫天花瓣。", "en": "Cherry petals fall and spin in the wind, swaying lightly; click to swirl a storm of blossoms." },
     "particle-tornado": { "zh": "粒子绕轴螺旋上升成龙卷风，底部旋涡明亮，鼠标移动控制风眼位置。", "en": "Particles spiral up around an axis into a tornado, bright vortex at the base; the mouse moves the eye." },
     "bouncing-balls": { "zh": "大量弹性小球物理碰撞弹跳，重力与摩擦力模拟，点击注入新球。", "en": "Many elastic balls collide and bounce with gravity and friction; click to inject new balls." },
@@ -117,7 +114,6 @@
     "spotlight-scan": { "zh": "聚光灯锥光在画面上来回扫描，照亮区域字符粒子浮现，鼠标移动即控制聚光位置与范围。", "en": "A spotlight cone scans back and forth across the canvas, revealing character particles in the lit area; the mouse moves the spot." },
     "ferrofluid-collision": { "zh": "磁流体状粘稠粒子团在鼠标扰动下碰撞变形、拖拽分裂，高光流动感与 metaball 粘稠融合效果。", "en": "Viscous ferrofluid-like particle clumps collide and deform under the mouse, split on drag, with flowing highlights and metaball fusion." },
     "portal-vortex": { "zh": "双色对旋漩涡如科幻传送门，粒子螺旋吸入中心，鼠标移动改变漩涡位置与强度，按下增强吸力。", "en": "A two-color counter-rotating vortex like a sci-fi portal; particles spiral into the center, mouse moves and press strengthens suction." },
-    "matrix-rain-code": { "zh": "经典矩阵数字字符雨，片假名+数字+字母下落拖尾、亮度渐变，鼠标掠过加速坠落，头部白色高亮。", "en": "The classic matrix character rain — katakana+digits+letters falling with trails and brightness gradient; the mouse accelerates the fall, white head highlight." },
     "origami-unfold": { "zh": "3D 折面从中心逐面展开成六边形几何体，鼠标 X 控制展开进度，Y 控制倾斜视角，折痕高光清晰。", "en": "3D folds unfold face by face from the center into a hexahedron; mouse X controls unfold progress, Y controls tilt; crisp crease highlights." },
     "hologram-scan": { "zh": "半透明线框球体被扫描线逐层扫过，截面发光，全息投影质感，CRT 噪点与 RGB 色散。", "en": "A translucent wireframe sphere swept layer by layer by scanlines, cross-sections glowing, holographic projection, CRT noise and RGB dispersion." },
     "em-field-lines": { "zh": "磁场流线从 N/S 两极发出，受鼠标位置偏转弯曲，发光流线效果，场强点阵背景。", "en": "Field lines emit from N/S poles, bending with the mouse position, glowing streamlines over a field-strength dot background." },
@@ -134,7 +130,11 @@
     "aurora-curtain-v2": { "zh": "窗帘状极光流体质感多层飘动、交叠明暗起伏，垂向光带与波纹褶皱。", "en": "Curtain-like aurora fluid layered and swaying, overlapping light and shade, vertical bands and ripple folds." },
     "spring-pendulum": { "zh": "一串弹簧质点首尾相连构成多节摆，重力 + 弹簧约束物理模拟，鼠标牵引链端。", "en": "A chain of spring-mass points forms a multi-segment pendulum, gravity + spring-constraint physics; the mouse drags the chain end." },
     "clock-vortex": { "zh": "表盘刻度沿涡流旋转扭曲，时分秒针化为流光残影，真实时间与科幻漩涡融合。", "en": "Clock dial marks twist along a vortex, hands becoming flowing-light afterimages — real time fused with a sci-fi swirl." },
-    "cosmic-dust": { "zh": "大体积尘埃粒子云缓慢自转、明暗起伏呼吸，体积云团感与暗云遮罩，鼠标扰动云团。", "en": "A large dust particle cloud slowly rotating and breathing in brightness, volumetric cloud feel with dark occluders; the mouse stirs the cloud." }
+    "cosmic-dust": { "zh": "大体积尘埃粒子云缓慢自转、明暗起伏呼吸，体积云团感与暗云遮罩，鼠标扰动云团。", "en": "A large dust particle cloud slowly rotating and breathing in brightness, volumetric cloud feel with dark occluders; the mouse stirs the cloud." },
+    "metaballs": { "zh": "半透明液滴相互靠近时融为一团，分开时拉出丝带，模拟表面张力。", "en": "Translucent blobs merge into one as they near, stretching filaments apart — simulated surface tension." },
+    "wave-grid": { "zh": "3D 透视的水波点阵，径向波纹由中心推开又荡回，像一张呼吸的水床。", "en": "A 3D perspective grid of water, radial ripples pushed out and swelling back — a breathing waterbed." },
+    "plasma-ball": { "zh": "中心等离子球表面电流弧随机游走迸裂，触碰般闪烁的辉光球。", "en": "Electric arcs wander and crackle across a central plasma sphere, a touch-like shimmering glow." },
+    "fireflies": { "zh": "夏夜草丛间萤火虫明灭漂移，暖黄光点拉出柔和余晖，随风轻轻飘。", "en": "Fireflies flicker and drift through summer grass, warm-yellow trails of afterglow swaying in the breeze." }
   };
   function curLang() {
     try {

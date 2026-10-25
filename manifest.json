@@ -1,20 +1,12 @@
 {
   "name": "MOTION · Web 动效博物馆",
   "short_name": "MOTION",
-  "description": "120 种手造 Web 动效，可交互、可复制、可商用。视口外自动暂停，智能性能调度。",
+  "description": "130 种手写 Web 动效，可交互、视口外自动暂停、智能性能调度。",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#05060a",
   "theme_color": "#0a0d18",
-  "lang": "zh-CN",
-  "icons": [
-    {
-      "src": "thumbnail.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ]
+  "lang": "zh-CN"
 }

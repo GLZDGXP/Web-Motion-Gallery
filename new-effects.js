@@ -438,8 +438,8 @@
   window.HilbertCurve = HilbertCurve;
 
   // ============================================================
-  // 鸿蒙「沉浸光感」——重写 HarmonyNotification（覆盖 bundle 版）
-  // 参照 HarmonyOS 沉浸光感：磨砂玻璃通知卡片 + 星点光粒子，
+  // 沉浸光感粒子——重写 HarmonyNotification（覆盖 bundle 版）
+  // 磨砂玻璃通知卡片 + 星点光粒子，
   // 「指尖轻滑，光随指动」+「卡片消散如星光」。精细打磨：
   //  - 稳定 setup/draw/cleanup 引用（防滚动重渲染反复重建 effect）
   //  - dt 累积计时（待机暂停安全，恢复后动画不错位）
@@ -620,5 +620,183 @@
     return React.createElement('canvas', { ref: ref, style: { width: '100%', height: '100%', display: 'block' } });
   }
   window.HarmonyNotification = HarmonyNotification;
+
+  /* ===== 新增 10 个动效（index 131–140），全部走 ce() 稳定引用 + dt 计时 ===== */
+
+
+  /* 12. Metaballs — 融合液滴，径向渐变 lighter 叠加出表面张力 */
+  function Metaballs() {
+    const ref = React.useRef(null);
+    ce(ref, {
+      setup() {
+        const balls = [];
+        for (let i = 0; i < 6; i++) balls.push({ x: 0.15 + Math.random() * 0.7, y: 0.15 + Math.random() * 0.7, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, r: 0.11 + Math.random() * 0.09, hue: 185 + Math.random() * 70 });
+        const st = { balls: balls, pointer: { x: 0.5, y: 0.5, active: false } };
+        const canvas = ref.current;
+        if (canvas) {
+          const onMove = function (e) { const r = canvas.getBoundingClientRect(); st.pointer.x = (e.clientX - r.left) / r.width; st.pointer.y = (e.clientY - r.top) / r.height; st.pointer.active = true; };
+          const onLeave = function () { st.pointer.active = false; };
+          canvas.addEventListener('pointermove', onMove);
+          canvas.addEventListener('pointerleave', onLeave);
+          st._c = function () { canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerleave', onLeave); };
+        }
+        return st;
+      },
+      draw(ctx, w, h, t, dt, st) {
+        ctx.fillStyle = 'rgba(4,6,14,0.22)'; ctx.fillRect(0, 0, w, h);
+        const f = Math.min(w, h), k = dt / 16;
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < st.balls.length; i++) {
+          const b = st.balls[i];
+          if (st.pointer.active) { const dx = st.pointer.x - b.x, dy = st.pointer.y - b.y, d2 = dx * dx + dy * dy; if (d2 < 0.16 && d2 > 0.0009) { const inv = 0.00012 / d2; b.vx += dx * inv; b.vy += dy * inv; } }
+          b.x += b.vx * k * 0.016; b.y += b.vy * k * 0.016;
+          if (b.x < 0.08 || b.x > 0.92) b.vx *= -1;
+          if (b.y < 0.08 || b.y > 0.92) b.vy *= -1;
+          const cx = b.x * w, cy = b.y * h, rad = b.r * f;
+          const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+          g.addColorStop(0, hsl(b.hue, 95, 62, 0.9));
+          g.addColorStop(0.55, hsl(b.hue, 95, 58, 0.45));
+          g.addColorStop(1, hsl(b.hue, 95, 55, 0));
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 6.283); ctx.fill();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      },
+      cleanup(st) { if (st && st._c) st._c(); },
+      active: true
+    });
+    return canvasEl(ref);
+  }
+  window.Metaballs = Metaballs;
+
+
+
+
+  /* 16. Wave Grid — 3D 透视水波点阵，径向波纹由中心推开又荡回 */
+  function WaveGrid() {
+    const ref = React.useRef(null);
+    ce(ref, {
+      setup() { return {}; },
+      draw(ctx, w, h, t, dt, st) {
+        ctx.fillStyle = 'rgba(3,5,14,0.28)'; ctx.fillRect(0, 0, w, h);
+        const tt = t * 0.001, cx = w / 2, cy = h * 0.52, R = Math.min(w, h) * 0.9, N = 13, gap = R / N;
+        ctx.globalCompositeOperation = 'lighter';
+        for (let iy = -N; iy <= N; iy++) {
+          for (let ix = -N; ix <= N; ix++) {
+            const gx = ix * gap, gy = iy * gap, d = Math.sqrt(gx * gx + gy * gy);
+            const wave = Math.sin(d * 0.05 - tt * 2.2) * Math.exp(-d * 0.006);
+            const z = wave * 24 + 28, persp = 320 / (320 + gy * 0.5 + z);
+            const x = cx + gx * persp, y = cy + (gy * 0.5 + z) * persp * 0.6;
+            if (x < -10 || x > w + 10 || y < -10 || y > h + 10) continue;
+            const al = Math.min(0.9, 0.14 + Math.max(0, wave) * 1.5);
+            ctx.fillStyle = hsl(190 + wave * 40, 90, 60, al);
+            const sz = Math.max(0.7, persp * 2.1);
+            ctx.fillRect(x, y, sz, sz);
+          }
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      },
+      active: true
+    });
+    return canvasEl(ref);
+  }
+  window.WaveGrid = WaveGrid;
+
+
+  /* 18. Plasma Ball — 中心等离子球，表面电流弧随机游走迸裂 */
+  function PlasmaBall() {
+    const ref = React.useRef(null);
+    ce(ref, {
+      setup() {
+        const arcs = [];
+        for (let i = 0; i < 7; i++) arcs.push({ a: Math.random() * 6.283, pts: [], life: 0, dur: 400 + Math.random() * 700 });
+        return { arcs: arcs };
+      },
+      draw(ctx, w, h, t, dt, st) {
+        ctx.fillStyle = 'rgba(4,5,14,0.16)'; ctx.fillRect(0, 0, w, h);
+        const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.3;
+        const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.3);
+        core.addColorStop(0, 'rgba(180,220,255,0.45)');
+        core.addColorStop(0.5, 'rgba(120,160,255,0.16)');
+        core.addColorStop(1, 'rgba(80,120,255,0)');
+        ctx.fillStyle = core; ctx.fillRect(0, 0, w, h);
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < st.arcs.length; i++) {
+          const arc = st.arcs[i];
+          arc.life += dt;
+          if (arc.life > arc.dur) { arc.life = 0; arc.a = Math.random() * 6.283; arc.pts = []; arc.dur = 400 + Math.random() * 700; }
+          arc.a += (Math.random() - 0.5) * 0.5;
+          arc.pts.push({ a: arc.a + (Math.random() - 0.5) * 0.3, rr: R * (0.9 + Math.random() * 0.2) });
+          if (arc.pts.length > 8) arc.pts.shift();
+          if (arc.pts.length < 2) continue;
+          const fade = 1 - arc.life / arc.dur;
+          ctx.strokeStyle = 'rgba(200,230,255,' + (0.7 * fade) + ')';
+          ctx.lineWidth = 1.4; ctx.beginPath();
+          for (let k = 0; k < arc.pts.length; k++) {
+            const p = arc.pts[k], x = cx + Math.cos(p.a) * p.rr, y = cy + Math.sin(p.a) * p.rr;
+            if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+        ctx.strokeStyle = 'rgba(160,200,255,0.32)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
+      },
+      active: true
+    });
+    return canvasEl(ref);
+  }
+  window.PlasmaBall = PlasmaBall;
+
+
+  /* 20. Fireflies — 夏夜萤火虫明灭漂移，暖黄光点拉出柔和余晖 */
+  function Fireflies() {
+    const ref = React.useRef(null);
+    ce(ref, {
+      setup() {
+        const st = { flies: null, init: false, _w: 0, _h: 0, pointer: { x: 0, y: 0, active: false } };
+        const canvas = ref.current;
+        if (canvas) {
+          const onMove = function (e) { const r = canvas.getBoundingClientRect(); st.pointer.x = e.clientX - r.left; st.pointer.y = e.clientY - r.top; st.pointer.active = true; };
+          const onLeave = function () { st.pointer.active = false; };
+          canvas.addEventListener('pointermove', onMove);
+          canvas.addEventListener('pointerleave', onLeave);
+          st._c = function () { canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerleave', onLeave); };
+        }
+        return st;
+      },
+      draw(ctx, w, h, t, dt, st) {
+        if (!st.init) { st.init = true; ctx.fillStyle = '#04060a'; ctx.fillRect(0, 0, w, h); }
+        ctx.fillStyle = 'rgba(4,6,10,0.10)'; ctx.fillRect(0, 0, w, h);
+        if (!st.flies || st._w !== w || st._h !== h) {
+          st._w = w; st._h = h;
+          const N = particleCount(w, h, 40, 18, 60);
+          st.flies = [];
+          for (let i = 0; i < N; i++) st.flies.push({ x: Math.random() * w, y: Math.random() * h, a: Math.random() * 6.283, sp: 0.15 + Math.random() * 0.3, ph: Math.random() * 6.283, sz: 1.2 + Math.random() * 1.6 });
+        }
+        const tt = t * 0.001, k = dt / 16;
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < st.flies.length; i++) {
+          const f = st.flies[i];
+          f.a += (Math.random() - 0.5) * 0.3;
+          f.x += Math.cos(f.a) * f.sp * k; f.y += Math.sin(f.a) * f.sp * k;
+          let near = 0;
+          if (st.pointer.active) { const dx = st.pointer.x - f.x, dy = st.pointer.y - f.y, d2 = dx * dx + dy * dy; if (d2 < 14400 && d2 > 16) { const d = Math.sqrt(d2), pull = (1 - d / 120) * 0.05; f.x += (dx / d) * pull * k; f.y += (dy / d) * pull * k; near = 1 - d / 120; } }
+          if (f.x < 0) f.x = w; if (f.x > w) f.x = 0;
+          if (f.y < 0) f.y = h; if (f.y > h) f.y = 0;
+          const glow = 0.5 + 0.5 * Math.sin(tt * 2 + f.ph), al = Math.min(1, 0.25 + glow * 0.6 + near * 0.5), r = f.sz * (1 + glow * 0.6 + near * 0.5) * 3;
+          const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+          g.addColorStop(0, 'rgba(255,240,150,' + al + ')');
+          g.addColorStop(0.4, 'rgba(220,200,80,' + al * 0.4 + ')');
+          g.addColorStop(1, 'rgba(180,160,40,0)');
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, 6.283); ctx.fill();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      },
+      cleanup(st) { if (st && st._c) st._c(); },
+      active: true
+    });
+    return canvasEl(ref);
+  }
+  window.Fireflies = Fireflies;
 
 })();
