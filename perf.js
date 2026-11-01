@@ -152,18 +152,43 @@
   };
 
   /* ---------- 驱动 bundle 激活预算（闭环反馈给引擎） ---------- */
+  // 关键：PerfMonitor 是 bundle 顶层 const（全局词法绑定，不在 window 上）。
+  // 必须用裸引用访问；否则 window.PerfMonitor 为 undefined，整个覆盖被静默跳过（之前就是这原因完全没生效）。
+  function resolvePerfMonitor() {
+    try { if (typeof PerfMonitor !== 'undefined' && PerfMonitor && typeof PerfMonitor.getTargetCost === 'function') return PerfMonitor; } catch (e) {}
+    try { if (window.PerfMonitor && typeof window.PerfMonitor.getTargetCost === 'function') return window.PerfMonitor; } catch (e) {}
+    return null;
+  }
+  var budgetApplied = false;
   function adaptBudget() {
-    if (window.PerfMonitor && typeof window.PerfMonitor.getTargetCost === 'function') {
-      var origG = window.PerfMonitor.getTargetCost.bind(window.PerfMonitor);
-      window.PerfMonitor.getTargetCost = function () {
-        var base = origG() || 800;
-        var scaled = Math.round(base * (0.6 + state.level * 0.8));
-        return Math.max(800, Math.min(1200, scaled));
+    if (budgetApplied) return;
+    var PM = resolvePerfMonitor();
+    if (!PM) return; // 稍后重试
+    budgetApplied = true;
+    var origG = PM.getTargetCost.bind(PM);
+    PM.getTargetCost = function () {
+      var base = origG() || 300;
+      var scaled = Math.round(base * (0.6 + state.level * 0.8));
+      // 同屏激活预算封顶 ~550（≈3~5 张 canvas）。GPU 大头是同屏 canvas 数量，必须狠压
+      return Math.max(300, Math.min(550, scaled));
+    };
+    if (typeof PM.getParticleCount === 'function') {
+      var origP = PM.getParticleCount.bind(PM);
+      PM.getParticleCount = function (base) {
+        var n = origP(base) || (typeof base === 'number' ? base : 30);
+        // 粒子数砍到 40%：单卡渲染成本大幅下降（粒子系统是 GPU 主因之一）
+        return Math.max(6, Math.round(n * 0.4));
       };
     }
   }
   adaptBudget();
   window.addEventListener('load', adaptBudget);
+  // 防御：PerfMonitor 可能稍晚才定义，最多重试 ~6s
+  var _tries = 0;
+  var _iv = setInterval(function () {
+    if (budgetApplied || _tries++ > 30) { clearInterval(_iv); return; }
+    adaptBudget();
+  }, 200);
 
   window.__perf = state; // 调试用
 })();

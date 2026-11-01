@@ -17,7 +17,10 @@
 
 .bg-stars {
   position: absolute;
-  inset: 0;
+  top: -320px;
+  left: -1500px;
+  width: calc(100% + 3000px);
+  height: calc(100% + 640px);
   background-image:
     radial-gradient(1px 1px at 20px 30px, rgba(200, 210, 255, 0.6), transparent 60%),
     radial-gradient(1px 1px at 80px 120px, rgba(180, 190, 240, 0.5), transparent 60%),
@@ -43,11 +46,12 @@
   background-repeat: repeat;
   animation: stars-drift 120s linear infinite;
   opacity: 0.6;
+  will-change: transform;
 }
 
 @keyframes stars-drift {
-  from { background-position: 0 0; }
-  to { background-position: 1500px 320px; }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-1500px, -320px, 0); }
 }
 
 /* 星点微闪——用伪元素叠加另一层错开的点阵做呼吸 */

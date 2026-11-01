@@ -284,11 +284,13 @@
     }
   })();
 
-  /* ===== 限制 canvas DPR：高分屏像素翻倍是 GPU 光栅化大头，激进 cap 到 1.0（配合激活预算下调，飞跃性能）===== */
+  /* ===== 限制 canvas DPR：高分屏像素翻倍是 GPU 光栅化大头。这里统一把 DPR 压到 0.7，
+     所有画布（hero 全屏/预览/卡片）物理分辨率降到 0.7x → 纹理上传量降约 51%。
+     注意：第三方曾误判“DPR 伪装导致像素暴涨”，实测相反——压低 DPR 是减少物理像素、降 GPU 的正解。===== */
   (function () {
-    var real = window.devicePixelRatio || 1;
-    if (real > 1.0) {
-      try { Object.defineProperty(window, 'devicePixelRatio', { get: function () { return 1.0; }, configurable: true }); } catch (e) {}
-    }
+  var real = window.devicePixelRatio || 1;
+  if (real > 0.7) {
+    try { Object.defineProperty(window, 'devicePixelRatio', { get: function () { return 0.7; }, configurable: true }); } catch (e) {}
+  }
   })();
 })();

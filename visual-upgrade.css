@@ -63,9 +63,8 @@ body::after {
 
 /* ---------- 2. 导航：玻璃质感 ---------- */
 .nav {
-  background: rgba(8, 10, 20, 0.6) !important;
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  background: rgba(8, 10, 20, 0.85) !important;
+  /* 去掉持续 backdrop-filter 模糊：导航栏浮在动画画布之上, 每帧重算模糊极费 GPU, 改用半透明实底 */
   border-bottom: 1px solid var(--hairline) !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 }
@@ -144,21 +143,6 @@ body::after {
     border-color .35s ease,
     box-shadow .45s ease !important;
 }
-/* 渐变描边（hairline rim） */
-.effect-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(155deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 38%, rgba(255,255,255,0) 70%, rgba(120,160,255,0.18));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  pointer-events: none;
-  z-index: 3;
-  opacity: .8;
-}
 .effect-card:hover {
   transform: translateY(-8px) scale(1.012) !important;
   border-color: color-mix(in srgb, var(--accent) 38%, transparent) !important;
@@ -168,8 +152,6 @@ body::after {
     var(--shadow-card),
     var(--shadow-glow) !important;
 }
-.effect-card:hover::before { opacity: 1; }
-
 .effect-card .card-header {
   display: flex !important;
   align-items: center !important;
@@ -347,7 +329,6 @@ body::after {
   .effect-card .card-title { font-size: 15px !important; }
   .effect-card .card-header { padding: 14px 16px 10px !important; gap: 12px !important; }
   .card-icon { width: 40px; height: 40px; border-radius: 12px; }
-  body::before { filter: blur(28px) saturate(120%); }
 }
 
 /* ---------- 12. 减少动效：尊重系统偏好 ---------- */

@@ -557,7 +557,11 @@
         if (!s.ps || s.w !== w || s.h !== h) { s.w = w; s.h = h; layoutHN(s); initHN(s); }
         s.elapsed += (dt > 0 && dt < 200 ? dt : 16);
         const now = s.elapsed, ps = s.ps, accent = optRef.current.accent;
-        const px = s.pointer.x, py = s.pointer.y, pAct = s.pointer.active;
+        // 虚拟自动指针：无真实鼠标时，让光晕/聚簇自动游走，卡片一进视口就“活”起来（待机不再空白）
+        const _real = s.pointer.active;
+        const px = _real ? s.pointer.x : (s.w * 0.5 + Math.cos(s.elapsed * 0.0006) * s.w * 0.3);
+        const py = _real ? s.pointer.y : (s.h * 0.5 + Math.sin(s.elapsed * 0.0008) * s.h * 0.3);
+        const pAct = true;
         if (pAct) {
           const R = 78, pg = ctx.createRadialGradient(px, py, 0, px, py, R);
           pg.addColorStop(0, hexA(accent, 0.22)); pg.addColorStop(1, hexA(accent, 0));
@@ -648,7 +652,10 @@
         ctx.globalCompositeOperation = 'lighter';
         for (let i = 0; i < st.balls.length; i++) {
           const b = st.balls[i];
-          if (st.pointer.active) { const dx = st.pointer.x - b.x, dy = st.pointer.y - b.y, d2 = dx * dx + dy * dy; if (d2 < 0.16 && d2 > 0.0009) { const inv = 0.00012 / d2; b.vx += dx * inv; b.vy += dy * inv; } }
+          // 虚拟自动指针：无真实鼠标时液滴自动吸附到游走焦点，一进视口就活
+          const _px = st.pointer.active ? st.pointer.x : (0.5 + Math.cos(t * 0.0006) * 0.3);
+          const _py = st.pointer.active ? st.pointer.y : (0.5 + Math.sin(t * 0.0008) * 0.3);
+          { const dx = _px - b.x, dy = _py - b.y, d2 = dx * dx + dy * dy; if (d2 < 0.16 && d2 > 0.0009) { const inv = 0.00012 / d2; b.vx += dx * inv; b.vy += dy * inv; } }
           b.x += b.vx * k * 0.016; b.y += b.vy * k * 0.016;
           if (b.x < 0.08 || b.x > 0.92) b.vx *= -1;
           if (b.y < 0.08 || b.y > 0.92) b.vy *= -1;
@@ -779,8 +786,11 @@
           const f = st.flies[i];
           f.a += (Math.random() - 0.5) * 0.3;
           f.x += Math.cos(f.a) * f.sp * k; f.y += Math.sin(f.a) * f.sp * k;
+          // 虚拟自动指针：无真实鼠标时萤火虫自动被游走焦点吸引增亮，一进视口就活
+          const _fx = st.pointer.active ? st.pointer.x : (w * 0.5 + Math.cos(t * 0.0006) * w * 0.3);
+          const _fy = st.pointer.active ? st.pointer.y : (h * 0.5 + Math.sin(t * 0.0008) * h * 0.3);
           let near = 0;
-          if (st.pointer.active) { const dx = st.pointer.x - f.x, dy = st.pointer.y - f.y, d2 = dx * dx + dy * dy; if (d2 < 14400 && d2 > 16) { const d = Math.sqrt(d2), pull = (1 - d / 120) * 0.05; f.x += (dx / d) * pull * k; f.y += (dy / d) * pull * k; near = 1 - d / 120; } }
+          { const dx = _fx - f.x, dy = _fy - f.y, d2 = dx * dx + dy * dy; if (d2 < 14400 && d2 > 16) { const d = Math.sqrt(d2), pull = (1 - d / 120) * 0.05; f.x += (dx / d) * pull * k; f.y += (dy / d) * pull * k; near = 1 - d / 120; } }
           if (f.x < 0) f.x = w; if (f.x > w) f.x = 0;
           if (f.y < 0) f.y = h; if (f.y > h) f.y = 0;
           const glow = 0.5 + 0.5 * Math.sin(tt * 2 + f.ph), al = Math.min(1, 0.25 + glow * 0.6 + near * 0.5), r = f.sz * (1 + glow * 0.6 + near * 0.5) * 3;

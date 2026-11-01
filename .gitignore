@@ -33,3 +33,5 @@ components/
 tool/
 DEPLOY.md
 package-lock.json"components/" 
+
+.playwright-cli/
